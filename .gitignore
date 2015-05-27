@@ -1,0 +1,21 @@
+# Object files
+*.o
+*.obj
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+neuro
+neurogpu-plus
+sin-gen
+
+# General swap/backup files #
+*~
+*.swp
+*.DS_Store
+*.lock
