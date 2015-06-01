@@ -1,5 +1,5 @@
-CUDA	= nvcc -c -O3 -arch sm_13
-CC		= g++ -c -O3
+CUDA	= nvcc -c -O0 -g -arch sm_13
+CC		= g++ -c -O0 -g
 
 all: neurogpu-plus
 

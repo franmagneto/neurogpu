@@ -96,7 +96,6 @@ DataSet* readDataset(char *filename, int inputSize, int outputSize, int isFuncti
 	char    buffer[500];
 	char    *value;
 	float   outputValue;
-	float   *outputs;
 	DataSet *dset;
 
 	f = fopen(filename, "r");
@@ -124,28 +123,26 @@ DataSet* readDataset(char *filename, int inputSize, int outputSize, int isFuncti
 		return NULL;
 	}
 
-	int  iix = 0, oix = 0;
-	outputs = (float*) malloc(sizeof(float) * outputSize);
-	while(fgets(buffer, 500, f) != NULL){
+	int  ix = 0;
+	while(fgets(buffer, 500, f) != NULL) {
 		int i;
 
 		value = strtok(buffer, ",");
 		for (i = 0; i < inputSize; ++i) {
-
-			dset->input[iix][i] = atof(value);
+			
+			dset->input[ix][i] = atof(value);
 			value = strtok(NULL, ",");
 		}
 		outputValue = atof(value);
 		if (outputSize > 1)
 			for (i = 0; i < outputSize; ++i)
-				dset->output[oix][i] = (i == outputValue) ? 0.9f : 0.1f;
+				dset->output[ix][i] = (i == outputValue) ? 0.9f : 0.1f;
 		else if (!isFunction)
-			dset->output[oix][0] = (outputValue == 1) ? 0.9f : 0.1f;
+			dset->output[ix][0] = (outputValue == 1) ? 0.9f : 0.1f;
 		else
-			dset->output[oix][0] = (outputValue + 1.0f) / 2.0f;
+			dset->output[ix][0] = (outputValue + 1.0f) / 2.0f;
+		ix++;
 	}
-
-	free(outputs);
 	fclose(f);
 
 	return dset;
@@ -178,10 +175,10 @@ int outputToClass(double *output, int outputSize)
 		return 1;
 	}
 
-	for (i = 0; i < outputSize; ++i) {
+	for (i = 0; i < outputSize; ++i) 
 		if (output[i] > output[classNumber])
 			classNumber = i;
-	}
+
 	return classNumber;
 }
 
