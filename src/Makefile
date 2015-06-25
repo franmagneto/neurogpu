@@ -1,5 +1,6 @@
-CUDA	= nvcc -c -O0 -g -arch sm_13
-CC		= g++ -c -O0 -g
+CUDAFLAGS	= -O0 -g -arch sm_13
+CUDA		= nvcc -c $(CUDAFLAGS)
+CC			= g++ -c -O0 -g
 
 all: neurogpu-plus
 
@@ -25,7 +26,7 @@ stopwatch.o: stopwatch.c stopwatch.h
 	$(CC) stopwatch.c
 
 sin-gen: sin-gen.cu
-	nvcc -o sin-gen sin-gen.cu
+	nvcc $(CUDAFLAGS) -o sin-gen sin-gen.cu
 
 clean:
 	rm -f *.o
