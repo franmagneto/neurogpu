@@ -69,7 +69,7 @@ bool CopyNetworkOutputs(MLPNetwork *nnet, float *outs);
 float *GetLayerOutputs(MLPNetwork *nnet, int ixLayer);
 void PrintWeights(MLPNetwork *nnet);
 float BatchTrainBackprop(MLPNetwork *nnet, DataSet *data, int epochs,
-                         float lrate, bool calcSSE, bool printSSE, int actf,
+                         float lrate, bool calcSSE, bool printMSE, int actf,
                          int casesPerBlock, int neuronsPerThread);
 
 // dataset functions

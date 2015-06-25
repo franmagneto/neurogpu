@@ -208,7 +208,7 @@ int runTest(const char *name, int casesPerBlock, int neuronsPerThread) {
 	printf("Training network with %d epochs...\n", desc->epochs);
 	StartTimer(&timer);
 	e = BatchTrainBackprop(nn, train_set, desc->epochs, desc->learningRate,
-			true, false, ACTF_SIGMOID, casesPerBlock, neuronsPerThread);
+			false, false, ACTF_SIGMOID, casesPerBlock, neuronsPerThread);
 	StopTimer(&timer);
 	elapsedTime = GetElapsedTime(&timer);
 	printf("Training finished, approximate final MSE: %f\n", e/nn->nCases);

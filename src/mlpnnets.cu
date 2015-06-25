@@ -535,7 +535,7 @@ bool PrepareForTraining(MLPNetwork *nnet, DataSet *trainData) {
 }
 
 float BatchTrainBackprop(MLPNetwork *nnet, DataSet *data, int epochs,
-		float lrate, bool calcSSE, bool printSSE, int actf, int casesPerBlock,
+		float lrate, bool calcSSE, bool printMSE, int actf, int casesPerBlock,
 		int neuronsPerThread) {
 	float *err = NULL, *d_err = NULL;
 	float *d_derivs;
@@ -603,8 +603,8 @@ float BatchTrainBackprop(MLPNetwork *nnet, DataSet *data, int epochs,
 				sse += (err[i] * err[i]);
 			}
 
-			if (printSSE)
-				printf("- SSE = %5.3f\n", sse);
+			if (printMSE)
+				printf("- MSE = %5.3f\n", sse / data->nCases * nOutputs);
 		}
 
 		// calculate derivatives of the error
