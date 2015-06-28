@@ -92,16 +92,6 @@ void FreeDeltas(MLPNetwork *nnet) {
 	}
 }
 
-// free all memory on device reserved for deltas, on all layers
-void FreeDeltasCPU(MLPNetwork *nnet) {
-	for (int i = 1; i < nnet->nLayers; ++i) {
-		if (nnet->layers[i]->deltas != NULL) {
-			free(nnet->layers[i]->deltas);
-			nnet->layers[i]->deltas = NULL;
-		}
-	}
-}
-
 void FreeOutputs(MLPNetwork *nnet) {
 	// do not free memory for layer 0 outputs (they come from inputs)
 	for (int i = 1; i < nnet->nLayers; ++i) {
@@ -365,23 +355,21 @@ bool TransferDataSetToDevice(DataSet *data) {
 // all input cases are computed in parallel
 //
 // grid will be <<<Nc, Nn>>> for Nc input cases and Nn neurons in layer
-__global__ void forward_layer(float *d_weights, int weightOffset,
-		int weightsPerNeuron, float *d_ins, int neuronsPrev, int neurons, float *d_outs,
-		int iter_i, int iter_j) {
-	// weightsPerNeuron is always = to neuronsPrev+1
-	int inputId = blockIdx.x;// + iter_i;
-	int neuronId = threadIdx.x;// + iter_j;
-	int tid = inputId * neurons + neuronId;
-	int ixIn = inputId * neuronsPrev;
-	int wid = weightOffset + (neuronId * weightsPerNeuron);
+__global__ void forward_layer(float *d_weights, int weightOffset, int weightsPerNeuron,
+                              float *d_ins, int neuronsPrev, float *d_outs, int inOffset)
+{
+    // weightsPerNeuron is always = to neuronsPrev+1
+    int tid = blockIdx.x * blockDim.x + threadIdx.x;
+    int ixIn = inOffset + (blockIdx.x * neuronsPrev);
+    int wid = weightOffset + (threadIdx.x * weightsPerNeuron);
 
-	// bias input
-	float a = d_weights[wid];
+    // bias input
+    float a = d_weights[wid];
 
-	for (int i = 1; i < weightsPerNeuron; ++i)
-		a += d_weights[wid + i] * d_ins[ixIn + i - 1];
+    for (int i = 1; i < weightsPerNeuron; ++i)
+        a += d_weights[wid + i] * d_ins[ixIn + i-1];
 
-	d_outs[tid] = asigmoid(a);
+    d_outs[tid] = asigmoid(a);
 }
 
 // present a vector of input cases to the network nnet and do forward propagation.
@@ -425,13 +413,12 @@ void PresentInputs(MLPNetwork *nnet, float *d_inputs, int actf,
 			for (int j = 0; j < neuronsPerThread; ++j) {
 				int threads = (j == neuronsPerThread-1) ? min_threads : max_threads;
 				forward_layer<<<blocks, threads>>>(nnet->d_weights,
-						nnet->layers[l]->weightOffset,
+						nnet->layers[l]->weightOffset + (j * nnet->layers[l]->weightsPerNeuron * max_threads),
 						nnet->layers[l]->weightsPerNeuron,
 						nnet->layers[l - 1]->d_outs,
 						nnet->layers[l - 1]->nNeurons,
-						nnet->layers[l]->nNeurons,
 						nnet->layers[l]->d_outs,
-						i*casesPerBlock, j*neuronsPerThread);
+						i * max_blocks * nnet->layers[l - 1]->nNeurons);
 			}
 		}
 	}
